@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flip – Gravity Switch Puzzle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div id="home-screen">
+        <h1>FLIP</h1>
+        <p>gravity operator</p>
+        <button class="btn" id="start-btn">Start Game</button>
+        <div id="player-setup"
+            style="display: none; flex-direction: column; align-items: center; gap: 15px; margin-top: 20px;">
+            <input type="text" id="player-name" placeholder="Enter Player Name" maxlength="15" required>
+            <button class="btn" id="continue-btn">Continue</button>
+        </div>
+    </div>
+
+    <!-- Level Selection Screen -->
+    <div id="level-selection-screen" style="display: none;">
+        <div class="level-selection-header"
+            style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 20px;">
+            <button id="level-selection-back-btn" class="glass-back-btn">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                Back
+            </button>
+        </div>
+        <h1 class="selection-title">Select Level</h1>
+        <div id="level-grid">
+            <!-- Level cards will be generated here by script.js -->
+        </div>
+    </div>
+
+    <!-- Loser Flash Overlay -->
+    <div id="loser-flash"></div>
+
+    <div id="game-content" style="display: none; flex-direction: column; align-items: center;">
+        <div id="game-header">
+            <div class="header-left">
+                <button id="in-game-back-btn" class="glass-back-btn" title="Back"
+                    style="padding: 10px; border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+            </div>
+            <div class="header-center"
+                style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div id="level-indicator" style="margin-top: 0; margin-bottom: 5px; font-size: 16px;">LEVEL 1</div>
+                <div id="game-stats">
+                    <div id="timer-container" title="Time Remaining">
+                        <span id="timer-icon">⏱️</span>
+                        <span id="timer-value">00:00</span>
+                    </div>
+                    <div id="score-container" title="Current Coins">
+                        <span id="score-icon">🪙</span>
+                        <span id="score-value">0</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div id="display-player-name">Player</div>
+                <button id="how-to-play-btn" title="How to Play" class="icon-btn" style="margin-right: 10px;"></button>
+                <button id="game-settings-btn" title="Settings"></button>
+            </div>
+        </div>
+
+        <div id="game-container">
+            <canvas id="gameCanvas" width="800" height="500"></canvas>
+            <div id="tutorial-overlay" style="display: none;">
+                <div id="tutorial-step-container">
+                    <div class="tutorial-step-indicator">
+                        <span id="tutorial-step-num">1</span> / <span id="tutorial-step-total">5</span>
+                    </div>
+                    <div id="tutorial-gesture">⬅️ ➡️</div>
+                    <div id="tutorial-title">MOVE LEFT & RIGHT</div>
+                    <div id="tutorial-desc">Use <kbd>Arrow Left</kbd> and <kbd>Arrow Right</kbd> keys to move</div>
+                    <div class="tutorial-progress-bar">
+                        <div id="tutorial-progress-fill"></div>
+                    </div>
+                    <button id="tutorial-next-btn" class="btn tutorial-btn">Next →</button>
+                    <button id="tutorial-skip-btn" class="tutorial-skip">Skip Tutorial</button>
+                </div>
+            </div>
+            <div id="message-overlay">
+                <div id="message-header">Level Complete!</div>
+                <div id="message-text">Bonus coins added for speed!</div>
+                <button class="btn" id="overlay-button" onclick="nextLevel()">Continue</button>
+                <button class="btn btn-buy-time" id="buy-time-btn" style="display:none;">⏱️ +10s for 100 🪙</button>
+                <div id="coin-balance-hint" style="display:none;"></div>
+            </div>
+        </div>
+
+
+        <!-- Mobile Controls -->
+        <button id="mobile-controls-toggle">🎮 Controls</button>
+        <div class="mobile-control-btn left-btn movable" id="mobile-left-btn">←</div>
+        <div class="mobile-control-btn right-btn movable" id="mobile-right-btn">→</div>
+        <div class="mobile-control-btn up-btn movable" id="mobile-up-btn">↑</div>
+        <div class="mobile-control-btn down-btn movable" id="mobile-down-btn">↓</div>
+    </div>
+
+    <!-- Game Settings Modal -->
+    <div id="game-settings-modal">
+        <div id="game-settings-content">
+            <h2>🎮 Game Settings</h2>
+
+            <div class="settings-section">
+                <h3>🎯 Game Controls</h3>
+                <button class="game-setting-btn pause-btn" id="pause-btn">
+                    <span>⏸️</span> Pause Game
+                </button>
+                <button class="game-setting-btn play-btn" id="resume-btn" style="display: none;">
+                    <span>▶️</span> Resume Game
+                </button>
+            </div>
+
+            <div class="settings-section">
+                <h3>📱 Mobile Settings</h3>
+                <div class="setting-toggle">
+                    <label class="setting-label">
+                        <span>🎮</span> Movable Controls
+                    </label>
+                    <div class="toggle-switch" id="movable-controls-toggle"></div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3>🚪 Exit Options</h3>
+                <button class="game-setting-btn exit-btn" id="exit-btn">
+                    <span>🏠</span> Exit to Home
+                </button>
+                <button class="game-setting-btn close-btn" id="reset-progress-btn"
+                    style="background: linear-gradient(135deg, #4b5563, #374151); margin-top: 10px;">
+                    <span>🔄</span> Reset Progress
+                </button>
+                <button class="game-setting-btn close-btn" id="close-game-settings">
+                    <span>✖️</span> Close Settings
+                </button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Instructions Modal -->
+    <div id="instructions-modal">
+        <div id="instructions-content">
+            <h2>📖 How to Play</h2>
+
+            <div class="instructions-section">
+                <h3>🎯 Objective</h3>
+                <p>Navigate your glowing cube through each level and reach the <strong style="color: #00ff88;">green
+                        exit portal</strong> before time runs out. Progress through increasingly difficult levels to
+                    prove your mastery!</p>
+            </div>
+
+            <div class="instructions-section">
+                <h3>⌨️ Keyboard Controls</h3>
+                <div class="controls-grid">
+                    <div class="control-row"><kbd class="key-badge">←</kbd><kbd class="key-badge">→</kbd><span>Move Left
+                            / Right</span></div>
+                    <div class="control-row"><kbd class="key-badge">Space</kbd><span>Flip Gravity (toggle
+                            ceiling/floor)</span></div>
+                    <div class="control-row"><kbd class="key-badge">R</kbd><span>Restart Current Level</span></div>
+                </div>
+            </div>
+
+            <div class="instructions-section">
+                <h3>📱 Mobile / Touch Controls</h3>
+                <div class="controls-grid">
+                    <div class="control-row"><span class="touch-badge">←</span><span
+                            class="touch-badge">→</span><span>D-pad buttons to move</span></div>
+                    <div class="control-row"><span class="touch-badge">↑</span><span>Flip gravity UP (ceiling)</span>
+                    </div>
+                    <div class="control-row"><span class="touch-badge">↓</span><span>Flip gravity DOWN (floor)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="instructions-section">
+                <h3>⚖️ Gravity Mechanics</h3>
+                <p>Press <kbd class="key-badge">Space</kbd> to <strong>instantly flip gravity</strong>. Your cube will
+                    fall upward to the ceiling or back down to the floor. Use this to dodge obstacles, navigate
+                    platforms, and reach the exit portal. Timing is everything!</p>
+            </div>
+
+            <div class="instructions-section">
+                <h3>⏱️ Timer & 🪙 Coins</h3>
+                <p>Each level has a <strong style="color: #10b981;">countdown timer</strong>. Complete the level before
+                    it hits zero! Finishing quickly earns you <strong style="color: #f59e0b;">bonus coins</strong> based
+                    on remaining time. If you run out of time, spend <strong>100 🪙</strong> to buy <strong>+10
+                        seconds</strong>.</p>
+            </div>
+
+            <div class="instructions-section">
+                <h3>💥 Hazards & Death</h3>
+                <p><strong style="color: #ef4444;">Red spikes</strong> — instant death on contact!<br>
+                    <strong style="color: #ff6600;">Orange moving blocks</strong> (Level 7+) — deadly moving obstacles
+                    that bounce around.<br>
+                    <strong>Falling off-screen</strong> — if your cube leaves the play area, you die.
+                </p>
+            </div>
+
+            <div class="instructions-section">
+                <h3>💡 Pro Tips</h3>
+                <p>• Flip gravity <em>before</em> you reach a spike to soar over it.<br>
+                    • Platforms on the ceiling are just as useful as floor platforms!<br>
+                    • Speed = more coins. Don't be cautious, be <em>fast</em>.<br>
+                    • Later levels limit your gravity flips — plan each flip carefully!<br>
+                    • Use <kbd class="key-badge">R</kbd> to quickly restart if you get stuck.</p>
+            </div>
+
+            <button class="game-setting-btn close-btn" id="close-instructions-btn" style="margin-top: 25px;">
+                <span>✖️</span> Close
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
